@@ -1,29 +1,16 @@
-//
-//  ObjectSelectionViewModel.swift
-//  LinguaSpace
-//
-//  Created by Burak Demirhan on 08/06/26.
-//
-
 import SwiftUI
 
 struct ObjectSelectionView: View {
     
     @State private var viewModel = ObjectSelectionViewModel()
     @Environment(AppModel.self) private var appModel
-    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
-   
-    
     
     var body: some View {
         ZStack {
             VStack(spacing: 28) {
                 header
-                
                 objectSelectionPanel
-                
                 continueButton
-                
                 tipView
             }
             .frame(width: 620)
@@ -37,7 +24,7 @@ struct ObjectSelectionView: View {
                 .font(.largeTitle)
                 .fontWeight(.semibold)
             
-            Text("Select the objects you want to place in your room.")
+            Text("Select the objects you want to use for spatial vocabulary.")
                 .font(.headline)
                 .foregroundStyle(.secondary)
         }
@@ -51,7 +38,7 @@ struct ObjectSelectionView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("Choose the objects you want to place in your room.")
+                Text("AI will adapt vocabulary around these objects.")
                     .foregroundStyle(.secondary)
             }
             
@@ -98,28 +85,7 @@ struct ObjectSelectionView: View {
     
     private var continueButton: some View {
         Button {
-            Task {
-                guard appModel.immersiveSpaceState == .closed else {
-                    return
-                }
-                
-                appModel.immersiveSpaceState = .inTransition
-                
-                let result = await openImmersiveSpace(
-                    id: appModel.immersiveSpaceID
-                )
-                
-                switch result {
-                case .opened:
-                    appModel.immersiveSpaceState = .open
-                  
-                    
-                case .userCancelled, .error:
-                    appModel.immersiveSpaceState = .closed
-                @unknown default:
-                    appModel.immersiveSpaceState = .closed
-                }
-            }
+            appModel.moveToScenarioSelection()
         } label: {
             HStack(spacing: 12) {
                 Text("Continue")
@@ -132,22 +98,19 @@ struct ObjectSelectionView: View {
             .padding(.vertical, 18)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(
-            !appModel.canContinue ||
-            appModel.immersiveSpaceState != .closed
-        )
+        .disabled(!appModel.canContinueFromObjectSelection)
     }
     
     private var tipView: some View {
         HStack(spacing: 16) {
-            Image(systemName: "lightbulb")
+            Image(systemName: "sparkles")
                 .font(.title2)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Tip")
+                Text("Context matters")
                     .font(.headline)
                 
-                Text("You will place these objects one by one in your room.")
+                Text("The same object can teach different Italian vocabulary depending on the scenario.")
                     .foregroundStyle(.secondary)
             }
             

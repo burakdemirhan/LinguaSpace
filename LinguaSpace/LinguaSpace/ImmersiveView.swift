@@ -24,31 +24,43 @@ struct ImmersiveView: View {
     }
     
     private func makeRootEntity() -> Entity {
+
         let rootEntity = Entity()
-        let vocabularyService = VocabularyMappingService()
+
         
-        for (index, object) in appModel.selectedObjects.enumerated() {
-            let vocabularyItem = vocabularyService.vocabularyItem(for: object)
-            
+
+        for (index, vocabularyItem) in appModel.generatedVocabularyItems.enumerated() {
+
             let position = SIMD3<Float>(
 
                 -0.7 + Float(index % 3) * 0.7,
 
-                2.0 - Float(index / 3) * 0.28,
+                2.0 - Float(index / 3) * 0.32,
 
                 -1.8
 
             )
+
             
+
             let labelEntity = makeVocabularyLabelEntity(
+
                 vocabularyItem: vocabularyItem,
+
                 position: position
+
             )
+
             
+
             rootEntity.addChild(labelEntity)
+
         }
+
         
+
         return rootEntity
+
     }
     
     private func makeVocabularyLabelEntity(
