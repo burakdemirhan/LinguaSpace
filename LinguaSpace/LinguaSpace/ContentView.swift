@@ -6,16 +6,56 @@
 //
 
 import SwiftUI
-import RealityKit
-import RealityKitContent
-
-
 
 struct ContentView: View {
-   
+
+    
+
+    @Environment(AppModel.self) private var appModel
+
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+
+    
+
     var body: some View {
 
-        ObjectSelectionView()
+        if appModel.immersiveSpaceState == .open {
+
+            VStack(spacing: 12) {
+
+                Text("LinguaSpace Active")
+
+                    .font(.headline)
+
+                
+
+                Button("Back to Setup") {
+
+                    Task {
+
+                        await dismissImmersiveSpace()
+
+                        appModel.immersiveSpaceState = .closed
+
+                    }
+
+                }
+
+                .buttonStyle(.borderedProminent)
+
+            }
+
+            .padding(24)
+
+            .frame(width: 300)
+
+            .glassBackgroundEffect()
+
+        } else {
+
+            ObjectSelectionView()
+
+        }
 
     }
 
@@ -24,5 +64,7 @@ struct ContentView: View {
 #Preview {
 
     ContentView()
+
+        .environment(AppModel())
 
 }

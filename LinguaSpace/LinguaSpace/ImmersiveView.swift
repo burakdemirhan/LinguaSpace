@@ -4,85 +4,129 @@
 //
 //  Created by Burak Demirhan on 08/06/26.
 //
-
 import SwiftUI
-
 import RealityKit
 
-import RealityKitContent
-
 struct ImmersiveView: View {
-
     
-
     @Environment(AppModel.self) private var appModel
+    @Environment(\.dismissImmersiveSpace)
 
+    private var dismissImmersiveSpace
     
-
     var body: some View {
-
         RealityView { content in
-
-            let rootEntity = Entity()
-
-            
-
-            for (index, object) in appModel.selectedObjects.enumerated() {
-
-                let textMesh = MeshResource.generateText(
-
-                    object.name,
-
-                    extrusionDepth: 0.01,
-
-                    font: .systemFont(ofSize: 0.12),
-
-                    containerFrame: .zero,
-
-                    alignment: .center,
-
-                    lineBreakMode: .byWordWrapping
-
-                )
-
-                
-
-                let material = SimpleMaterial(color: .white, isMetallic: false)
-
-                let textEntity = ModelEntity(mesh: textMesh, materials: [material])
-
-                
-
-                textEntity.position = SIMD3<Float>(
-
-                    Float(index) * 0.35 - 0.35,
-
-                    1.4,
-
-                    -1.2
-
-                )
-
-                
-
-                rootEntity.addChild(textEntity)
-
-            }
-
-            
-
-            content.add(rootEntity)
-
+            content.add(makeRootEntity())
+        } update: { content in
+            content.entities.removeAll()
+            content.add(makeRootEntity())
         }
-
     }
+    
+    private func makeRootEntity() -> Entity {
+        let rootEntity = Entity()
+        let vocabularyService = VocabularyMappingService()
+        
+        for (index, object) in appModel.selectedObjects.enumerated() {
+            let vocabularyItem = vocabularyService.vocabularyItem(for: object)
+            
+            let position = SIMD3<Float>(
 
+                -0.7 + Float(index % 3) * 0.7,
+
+                2.0 - Float(index / 3) * 0.28,
+
+                -1.8
+
+            )
+            
+            let labelEntity = makeVocabularyLabelEntity(
+                vocabularyItem: vocabularyItem,
+                position: position
+            )
+            
+            rootEntity.addChild(labelEntity)
+        }
+        
+        return rootEntity
+    }
+    
+    private func makeVocabularyLabelEntity(
+        vocabularyItem: VocabularyItem,
+        position: SIMD3<Float>
+    ) -> Entity {
+        let container = Entity()
+        container.position = position
+        
+        let backgroundMesh = MeshResource.generatePlane(
+            width: 0.60,
+            height: 0.26
+        )
+        
+        let backgroundMaterial = SimpleMaterial(
+
+            color: .black.withAlphaComponent(0.85),
+
+            roughness: 0.9,
+
+            isMetallic: false
+
+        )
+        
+        let backgroundEntity = ModelEntity(
+            mesh: backgroundMesh,
+            materials: [backgroundMaterial]
+        )
+        backgroundEntity.position = SIMD3<Float>(0, 0, -0.01)
+        
+        let translatedWordEntity = makeTextEntity(
+            text: vocabularyItem.translatedWord,
+            fontSize: 0.065
+        )
+        translatedWordEntity.position = SIMD3<Float>(0, 0.035, 0)
+        
+        let originalWordEntity = makeTextEntity(
+            text: vocabularyItem.objectName.uppercased(),
+            fontSize: 0.018
+        )
+        originalWordEntity.position = SIMD3<Float>(0, -0.04, 0)
+        
+        container.addChild(backgroundEntity)
+        container.addChild(translatedWordEntity)
+        container.addChild(originalWordEntity)
+        
+        return container
+    }
+    
+    private func makeTextEntity(
+        text: String,
+        fontSize: CGFloat
+    ) -> ModelEntity {
+        let mesh = MeshResource.generateText(
+            text,
+            extrusionDepth: 0.003,
+            font: .systemFont(ofSize: fontSize, weight: .semibold),
+            containerFrame: CGRect(
+                x: -0.22,
+                y: -0.05,
+                width: 0.44,
+                height: 0.1
+            ),
+            alignment: .center,
+            lineBreakMode: .byTruncatingTail
+        )
+        
+        let material = SimpleMaterial(
+            color: .white,
+            roughness: 0.4,
+            isMetallic: false
+        )
+        
+        return ModelEntity(mesh: mesh, materials: [material])
+    }
 }
 
 #Preview(immersionStyle: .mixed) {
-
     ImmersiveView()
-
         .environment(AppModel())
-
 }

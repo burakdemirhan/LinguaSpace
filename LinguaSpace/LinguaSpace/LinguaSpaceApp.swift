@@ -13,11 +13,13 @@ struct LinguaSpaceApp: App {
     @State private var appModel = AppModel()
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(appModel)
-        }
+        WindowGroup(id: "MainWindow") {
 
+            ContentView()
+
+                .environment(appModel)
+
+        }
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
             ImmersiveView()
                 .environment(appModel)
